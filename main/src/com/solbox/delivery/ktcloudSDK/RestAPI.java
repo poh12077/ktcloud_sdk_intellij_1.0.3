@@ -3,7 +3,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.json.JSONException;
+
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,7 +16,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.entity.StringEntity;
 
@@ -47,7 +46,7 @@ public class RestAPI {
 		bufferedReader.close();
 		String responseBody = stringBuffer.toString();
 		System.out.println(statusCode + " " + responseBody);
-		String projectID = Utils.projectIDParser(responseBody);
+		String projectID = ResponseParser.projectIDParser(responseBody);
 		
 		String token = connection.getHeaderField("X-Subject-Token");
 		JSONObject result = new JSONObject();
@@ -181,7 +180,7 @@ public class RestAPI {
 		}
 		String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
 		System.out.println(statusCode + " " + responseBody);
-		String projectID = Utils.projectIDParser(responseBody);
+		String projectID = ResponseParser.projectIDParser(responseBody);
 		
 		JSONObject result = new JSONObject();
 		String token = response.getFirstHeader("X-Subject-Token").getValue();

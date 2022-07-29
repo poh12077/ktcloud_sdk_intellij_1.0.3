@@ -42,8 +42,8 @@ public class KTCloudOpenAPI {
 		// token
 		result = RestAPI.request(getToken_URL, POST, RequestBody.getToken());
 		// result = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
-		String token = Utils.statusCodeParser(result);
-		String projectID = Utils.getProjectID(result);
+		String token = ResponseParser.statusCodeParser(result);
+		String projectID = ResponseParser.getProjectID(result);
 
 		// get vm
 		String VmimageID = VmImage_complete1;
@@ -51,24 +51,24 @@ public class KTCloudOpenAPI {
 		requestBody = RequestBody.getVm(serverName, VmimageID, specs);
 		// result = RestAPI.request(getVm_URL, POST, token, requestBody);
 		result = RestAPI.post(getVm_URL, token, requestBody, 10);
-		response = Utils.statusCodeParser(result);
-		String VmId = Utils.VmCreateResponseParser(response);
+		response = ResponseParser.statusCodeParser(result);
+		String VmId = ResponseParser.VmCreateResponseParser(response);
 
 		// get volume
 		String volumeImageID = "556aacd2-de16-47fc-b230-3db3a55be50d";
 		requestBody = RequestBody.getVolume(volumeName, volumeImageID);
 		result = RestAPI.request(getVolume_URL + projectID + "/volumes", POST, token, requestBody);
-		response = Utils.statusCodeParser(result);
-		String volumeID = Utils.volumeCreateResponseParser(response);
+		response = ResponseParser.statusCodeParser(result);
+		String volumeID = ResponseParser.volumeCreateResponseParser(response);
 
 		// get public ip
 		result = RestAPI.request(getIP_URL, POST, token, "");
-		response = Utils.statusCodeParser(result);
-		String publicIpjobID = Utils.IPCreateResponseParser(response);
+		response = ResponseParser.statusCodeParser(result);
+		String publicIpjobID = ResponseParser.IPCreateResponseParser(response);
 
 		//get public ip_id
-		response = Utils.lookupJobId(publicIpjobID, token, 10);
-		String publicIP_ID = Utils.PublicIPJobIDlookupParser(response);
+		response = ResponseParser.lookupJobId(publicIpjobID, token, 10);
+		String publicIP_ID = ResponseParser.PublicIPJobIDlookupParser(response);
 
 		// connect vm and volume
 		System.out.print("Server creation is in progress ");
@@ -76,7 +76,7 @@ public class KTCloudOpenAPI {
 		while (true) {
 			requestBody = RequestBody.connectVmAndVolume(volumeID);
 			result = RestAPI.request(connectVmAndVolume_URL + VmId + "/os-volume_attachments", POST, token, requestBody);
-			response = Utils.statusCodeParser(result);
+			response = ResponseParser.statusCodeParser(result);
 			if (response.length() > 0) {
 				break;
 			}
@@ -89,22 +89,22 @@ public class KTCloudOpenAPI {
 		 
 		// look up vm ip
 		result = RestAPI.request(VmDetail_URL + VmId, GET, token, "");
-		response = Utils.statusCodeParser(result);
-		String privateIP = Utils.VmDetailResponseParser(response);
+		response = ResponseParser.statusCodeParser(result);
+		String privateIP = ResponseParser.VmDetailResponseParser(response);
 
 		// set static NAT
 		String networkID = "71655962-3e67-42d6-a17d-6ab61a435dfe";
 		requestBody = RequestBody.setStaticNat(privateIP, networkID, publicIP_ID);
 		result = RestAPI.request(setStaticNAT_URL, POST, token, requestBody);
-		response = Utils.statusCodeParser(result);
-		String staticNAT_ID = Utils.staticNATSettingResponseParser(response);
+		response = ResponseParser.statusCodeParser(result);
+		String staticNAT_ID = ResponseParser.staticNATSettingResponseParser(response);
 
 		// open firewall
 		requestBody = RequestBody.openFirewall("0", "65535", staticNAT_ID, "6b812762-c6bc-4a6d-affb-c469af1b4342",
 				"172.25.1.1/24", "ALL", "71655962-3e67-42d6-a17d-6ab61a435dfe");
 		result = RestAPI.request(openFirewall_URL, POST, token, requestBody);
-		response = Utils.statusCodeParser(result);
-		String firewallJobId = Utils.firewallJobIdParser(response);
+		response = ResponseParser.statusCodeParser(result);
+		String firewallJobId = ResponseParser.firewallJobIdParser(response);
 		
 		System.out.println("server creation is done");
 		
@@ -118,45 +118,45 @@ public class KTCloudOpenAPI {
 		System.out.println("Server deletion has started");
 		// token
 		result = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
-		String token = Utils.statusCodeParser(result);
+		String token = ResponseParser.statusCodeParser(result);
 
-		Utils.deleteVmOnly(serverInformation.getVmId(), token, timeout);
-		Utils.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
-		Utils.closeFirewall(serverInformation.getFirewallJobId(), token, timeout);
-		Utils.deleteStaticNat(serverInformation.getStaticNAT_ID(), token, timeout);
-		Utils.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
+		ResourceHandler.deleteVmOnly(serverInformation.getVmId(), token, timeout);
+		ResourceHandler.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
+		ResourceHandler.closeFirewall(serverInformation.getFirewallJobId(), token, timeout);
+		ResourceHandler.deleteStaticNat(serverInformation.getStaticNAT_ID(), token, timeout);
+		ResourceHandler.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
 	}
 
 	public static void init() throws Exception {
 		String result;
 		String response;
 		result = RestAPI.request(getToken_URL, POST, RequestBody.getToken());
-		String token = Utils.statusCodeParser(result);
-		String projectID = Utils.getProjectID(result);
+		String token = ResponseParser.statusCodeParser(result);
+		String projectID = ResponseParser.getProjectID(result);
 
 		// close firewall
 		result = RestAPI.request(firewall_List_URL, GET, token, "");
-		response = Utils.statusCodeParser(result);
+		response = ResponseParser.statusCodeParser(result);
 		Initialization.closeAllFirewall(response, token);
 
 		// unlock static NAT
 		result = RestAPI.request(staticNATList_URL, GET, token, "");
-		response = Utils.statusCodeParser(result);
+		response = ResponseParser.statusCodeParser(result);
 		Initialization.deleteAllStaticNAT(response, token);
 
 		// delete ip
 		result = RestAPI.request(IPList_URL, GET, token, "");
-		response = Utils.statusCodeParser(result);
+		response = ResponseParser.statusCodeParser(result);
 		Initialization.deleteAllIP(response, token);
 
 		// delete vm
 		result = RestAPI.request(VmList_URL, GET, token, "");
-		response = Utils.statusCodeParser(result);
+		response = ResponseParser.statusCodeParser(result);
 		Initialization.deleteAllVm(response, token);
 
 		//delete volume
 		result = RestAPI.get(deleteAllVolume_URL+projectID+"/volumes/detail", token, timeout);
-		response = Utils.statusCodeParser(result);
+		response = ResponseParser.statusCodeParser(result);
 		Initialization.deleteAllVolume(response, token, projectID);
 
 		System.out.println("initialization is done");
