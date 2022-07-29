@@ -8,9 +8,8 @@ public class KTCloudOpenAPI {
 
 	static final String getVolume_URL = "https://api.ucloudbiz.olleh.com/d1/volume/";
 	static final String connectVmAndVolume_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers/";
-	static final String deleteVolume = "https://api.ucloudbiz.olleh.com/d1/volume/";
-
-	
+	static final String deleteAllVolume_URL = "https://api.ucloudbiz.olleh.com/d1/volume/";
+	static final String deleteVolume_URL = "https://api.ucloudbiz.olleh.com/d1/volume/";
 	static final String getIP_URL = "https://api.ucloudbiz.olleh.com/d1/nc/IpAddress";
 	static final String deleteIP_URL = "https://api.ucloudbiz.olleh.com/d1/nc/IpAddress/";
 	static final String IPList_URL = "https://api.ucloudbiz.olleh.com/d1/nc/IpAddress";
@@ -31,7 +30,7 @@ public class KTCloudOpenAPI {
 	static final String POST = "POST";
 	static final int timeout = 10; //sec
 
-	static ServerInformation createServer(String serverName, String volumeName) throws Exception {
+	public static ServerInformation createServer(String serverName, String volumeName) throws Exception {
 
 		String requestBody;
 		String result;
@@ -114,7 +113,7 @@ public class KTCloudOpenAPI {
 		
 	}
 
-	static void deleteServer(ServerInformation serverInformation) throws Exception {
+	public static void deleteServer(ServerInformation serverInformation) throws Exception {
 		String result="";
 		System.out.println("Server deletion has started");
 		// token
@@ -128,11 +127,12 @@ public class KTCloudOpenAPI {
 		Utils.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
 	}
 
-	static void init() throws Exception {
+	public static void init() throws Exception {
 		String result;
 		String response;
 		result = RestAPI.request(getToken_URL, POST, RequestBody.getToken());
 		String token = Utils.statusCodeParser(result);
+		String projectID = Utils.getProjectID(result);
 
 		// close firewall
 		result = RestAPI.request(firewall_List_URL, GET, token, "");
@@ -154,10 +154,15 @@ public class KTCloudOpenAPI {
 		response = Utils.statusCodeParser(result);
 		Initialization.deleteAllVm(response, token);
 
+		//delete volume
+		result = RestAPI.get(deleteAllVolume_URL+projectID+"/volumes/detail", token, timeout);
+		response = Utils.statusCodeParser(result);
+		Initialization.deleteAllVolume(response, token, projectID);
+
 		System.out.println("initialization is done");
 	}
 
-	static void lookup() throws Exception {
+ 	public static void lookup() throws Exception {
 	}
 
 }

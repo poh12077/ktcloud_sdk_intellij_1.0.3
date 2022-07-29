@@ -133,7 +133,7 @@ public class Utils {
 	static void deleteVolume(String volumeID, String projectID, String token, int timeout) throws Exception {
 		int count = 0;
 		while (true) {
-			String result = RestAPI.delete(KTCloudOpenAPI.deleteVolume + projectID + "/volumes/" + volumeID, token,
+			String result = RestAPI.delete(KTCloudOpenAPI.deleteVolume_URL + projectID + "/volumes/" + volumeID, token,
 					timeout);
 			JSONObject jsonResult = new JSONObject(result);
 			if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED

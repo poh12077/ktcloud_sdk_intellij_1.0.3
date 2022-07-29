@@ -5,6 +5,19 @@ import org.json.JSONObject;
 
 public class Initialization {
 
+	static void deleteAllVolume(String list, String token, String projectId) throws Exception {
+
+		JSONObject fianlJsonObject = new JSONObject(list);
+		JSONArray volumes = fianlJsonObject.getJSONArray("volumes");
+
+		for (int i = 0; i < volumes.length(); i++) {
+			JSONObject volume = volumes.getJSONObject(i);
+			String volumeId = volume.getString("id");
+			RestAPI.delete(KTCloudOpenAPI.deleteVolume_URL+projectId+"/volumes/"+volumeId, token, KTCloudOpenAPI.timeout );
+			//Utils.deleteVolume(volumeId, projectId, token, KTCloudOpenAPI.timeout);
+		}
+	}
+
 	static void deleteAllVm(String list, String token) throws Exception {
 
 		JSONObject fianlJsonObject = new JSONObject(list);
@@ -17,7 +30,8 @@ public class Initialization {
 			RestAPI.request(KTCloudOpenAPI.forceDeleteVm_URL+VmId+"/action" , KTCloudOpenAPI.POST, token, requestBody );
 		}
 	}
-	
+
+
 	static void closeAllFirewall(String list, String token) throws Exception {
 
 		JSONObject fianlJsonObject = new JSONObject(list);

@@ -75,7 +75,7 @@ public class RestAPI {
 			outputStream.close();
 		}
 		int statusCode = connection.getResponseCode();
-		if (statusCode == 409) {
+		if (400 <= statusCode && statusCode < 500) {
 			JSONObject result = new JSONObject();
 			result.put("statusCode", statusCode);
 			result.put("response", "");
