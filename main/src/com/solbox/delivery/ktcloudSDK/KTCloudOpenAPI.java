@@ -43,7 +43,7 @@ public class KTCloudOpenAPI {
 		result = RestAPI.request(getToken_URL, POST, RequestBody.getToken());
 		// result = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
 		String token = ResponseParser.statusCodeParser(result);
-		String projectID = ResponseParser.getProjectID(result);
+		String projectID = ResponseParser.getProjectIdFromToken(result);
 
 		// get vm
 		String VmimageID = VmImage_complete1;
@@ -125,6 +125,8 @@ public class KTCloudOpenAPI {
 		ResourceHandler.closeFirewall(serverInformation.getFirewallJobId(), token, timeout);
 		ResourceHandler.deleteStaticNat(serverInformation.getStaticNAT_ID(), token, timeout);
 		ResourceHandler.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
+
+		System.out.println("server deletion is done");
 	}
 
 	public static void init() throws Exception {
@@ -132,7 +134,7 @@ public class KTCloudOpenAPI {
 		String response;
 		result = RestAPI.request(getToken_URL, POST, RequestBody.getToken());
 		String token = ResponseParser.statusCodeParser(result);
-		String projectID = ResponseParser.getProjectID(result);
+		String projectID = ResponseParser.getProjectIdFromToken(result);
 
 		// close firewall
 		result = RestAPI.request(firewall_List_URL, GET, token, "");
