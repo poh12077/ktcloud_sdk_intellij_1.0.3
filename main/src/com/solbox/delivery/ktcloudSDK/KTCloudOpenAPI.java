@@ -57,24 +57,10 @@ public class KTCloudOpenAPI {
 		String vmId = ResourceHandler.getVm(getVm_URL,token,serverName,VmImage_complete1, specs, timeout);
 		String volumeId = ResourceHandler.getVolume(getVolume_URL, token, volumeName, volumeImageId, projectId, timeout);
 		String publicIpId = ResourceHandler.getPublicIp(getIP_URL, token, timeout);
-
-
-		// connect vm and volume
 		System.out.print("Server creation is in progress ");
-		int count = 0;
-		while (true) {
-			requestBody = RequestBody.connectVmAndVolume(volumeId);
-			result = RestAPI.request(connectVmAndVolume_URL + vmId + "/os-volume_attachments", POST, token, requestBody);
-			response = ResponseParser.statusCodeParser(result);
-			if (response.length() > 0) {
-				break;
-			}
-			Thread.sleep(1000);
-			count++;
-			System.out.print(count+" ");
-		}
-		 System.out.println("Server creation is done");
-		 System.out.println("Server is connected with disk");
+		ResourceHandler.checkVmCreationStatus(VmDetail_URL,token,vmId,timeout,500, 1);
+		System.out.println("Server creation is done");
+		ResourceHandler.connectVmAndVolume(connectVmAndVolume_URL,token,vmId,volumeId,timeout);
 
 		String vmPrivateIp = ResponseParser.lookupVmPrivateIp(VmDetail_URL, token, vmId, timeout);
 		String staticNatId = ResourceHandler.setStaticNat(setStaticNAT_URL, token, networkId, vmPrivateIp, publicIpId, timeout);

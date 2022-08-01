@@ -29,6 +29,12 @@ public class ResourceHandler {
         return volumeID;
     }
 
+    static void connectVmAndVolume(String connectVmAndVolumeUrl, String token,String vmId, String volumeId, int timeout) throws Exception {
+       String  requestBody = RequestBody.connectVmAndVolume(volumeId);
+       String  result = RestAPI.post(connectVmAndVolumeUrl + vmId + "/os-volume_attachments", token, requestBody, timeout);
+       ResponseParser.statusCodeParser(result);
+    }
+
     static String getPublicIp(String getPublicIpUrl, String token, int timeout) throws Exception {
         String  result = RestAPI.post(getPublicIpUrl, token, "", timeout);
        String response = ResponseParser.statusCodeParser(result);
@@ -55,6 +61,29 @@ public class ResourceHandler {
         return firewallJobId;
     }
 
+    static void checkVmCreationStatus(String vmDetailUrl, String token, String vmId, int timeout, int maximumWaitingTime, int requestCycle) throws Exception {
+        int count = 0;
+        while (true) {
+            String result = RestAPI.get(vmDetailUrl + vmId, token, timeout);
+            String response = ResponseParser.statusCodeParser(result);
+            JSONObject fianlJsonObject = new JSONObject(response);
+            JSONObject server = fianlJsonObject.getJSONObject("server");
+            int power_state = server.getInt("OS-EXT-STS:power_state");
+            if (power_state == 1) {
+                return;
+            }
+            Thread.sleep(requestCycle*1000);
+            count++;
+            System.out.print(count+" ");
+
+            if( maximumWaitingTime <= count ){
+                throw new Exception("VM creation error");
+            }
+        }
+    }
+
+
+
     static void deleteVmOnly(String serverID, String token, int timeout) throws Exception {
         String requestBody = RequestBody.forceDeleteVm();
         String result = RestAPI.post(KTCloudOpenAPI.forceDeleteVm_URL + serverID + "/action", token, requestBody,
@@ -78,7 +107,7 @@ public class ResourceHandler {
             if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
                     || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
                     || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
-                System.out.println("Volume deletion is in progress");
+                System.out.println("Volume deletion is done");
                 break;
             } else {
                 System.out.print(count + " ");

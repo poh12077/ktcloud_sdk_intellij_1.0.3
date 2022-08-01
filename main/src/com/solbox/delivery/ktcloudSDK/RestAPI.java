@@ -74,12 +74,7 @@ public class RestAPI {
 			outputStream.close();
 		}
 		int statusCode = connection.getResponseCode();
-		if (400 <= statusCode && statusCode < 500) {
-			JSONObject result = new JSONObject();
-			result.put("statusCode", statusCode);
-			result.put("response", "");
-			return result.toString();
-		}
+
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 		StringBuffer stringBuffer = new StringBuffer();
 		String inputLine;
@@ -108,13 +103,7 @@ public class RestAPI {
 		httpGet.setHeader("X-Auth-Token", token);
 		CloseableHttpResponse httpResponse = client.execute(httpGet);
 		int statusCode = httpResponse.getStatusLine().getStatusCode();
-		if (statusCode == 409) {
-			JSONObject result = new JSONObject();
-			result.put("statusCode", statusCode);
-			result.put("response", "");
-			client.close();
-			return result.toString();
-		}
+
 		String responseBody = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
 		System.out.println(statusCode + " " + responseBody);
 		JSONObject result = new JSONObject();
@@ -140,13 +129,7 @@ public class RestAPI {
 		httpPost.setHeader("X-Auth-Token", token);
 		CloseableHttpResponse response = client.execute(httpPost);
 		int statusCode = response.getStatusLine().getStatusCode();
-		if (statusCode == 409) {
-			JSONObject result = new JSONObject();
-			result.put("statusCode", statusCode);
-			result.put("response", "");
-			client.close();
-			return result.toString();
-		}
+
 		String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
 		System.out.println(statusCode + " " + responseBody);
 		JSONObject result = new JSONObject();
@@ -171,13 +154,7 @@ public class RestAPI {
 		httpPost.setHeader("Content-type", "application/json");
 		CloseableHttpResponse response = client.execute(httpPost);
 		int statusCode = response.getStatusLine().getStatusCode();
-		if (statusCode == 409) {
-			JSONObject result = new JSONObject();
-			result.put("statusCode", statusCode);
-			result.put("response", "");
-			client.close();
-			return result.toString();
-		}
+
 		String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
 		System.out.println(statusCode + " " + responseBody);
 		String projectID = ResponseParser.projectIDParser(responseBody);
@@ -204,13 +181,7 @@ public class RestAPI {
 		httpDelete.setHeader("X-Auth-Token", token);
 		CloseableHttpResponse response = client.execute(httpDelete);
 		int statusCode = response.getStatusLine().getStatusCode();
-		if (statusCode == 409) {
-			JSONObject result = new JSONObject();
-			result.put("statusCode", statusCode);
-			result.put("response", "");
-			client.close();
-			return result.toString();
-		}
+
 		String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
 		System.out.println(statusCode + " " + responseBody);
 		JSONObject result = new JSONObject();
