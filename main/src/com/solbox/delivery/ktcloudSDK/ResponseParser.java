@@ -120,4 +120,12 @@ public class ResponseParser {
 		return response;
 	}
 
+	static String lookupVmPrivateIp(String vmDetailUrl, String token, String vmId, int timeout) throws Exception {
+	  String result = RestAPI.get(vmDetailUrl + vmId, token, timeout);
+	String 	response = ResponseParser.statusCodeParser(result);
+		String vmPrivateIp = ResponseParser.VmDetailResponseParser(response);
+		return vmPrivateIp;
+	}
+
+
 }

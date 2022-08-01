@@ -8,7 +8,7 @@ public class App {
 
 			ServerInformation serverInformation = KTCloudOpenAPI.createServer("solbox", "solbox");
 			KTCloudOpenAPI.deleteServer(serverInformation);
-			KTCloudOpenAPI.init();
+			//KTCloudOpenAPI.init();
 			
 
 		} catch (Exception e) {

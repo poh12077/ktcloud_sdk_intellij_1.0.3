@@ -37,45 +37,34 @@ public class KTCloudOpenAPI {
 		String response;
 		String VmImage_complete1 = "03a6328b-76c8-4d15-8e3f-d5cae5cf1156";
 		String VmImage_nginx = "fab16e16-5d53-4e00-892f-bec4b10079bb";
-		
+		String specs = "61c68bc1-3a56-4827-9fd1-6a7929362bf6";
+		String volumeImageId = "556aacd2-de16-47fc-b230-3db3a55be50d";
+		String networkId = "71655962-3e67-42d6-a17d-6ab61a435dfe";
+
+		//firewall parameter
+		String startPort="0";
+		String endPort = "65535";
+		String sourceNetworkId = "6b812762-c6bc-4a6d-affb-c469af1b4342";
+		String destinationNetworkAddress="172.25.1.1/24";
+		String protocol="ALL";
+		String destinationNetworkId="71655962-3e67-42d6-a17d-6ab61a435dfe";
+
 		System.out.println("Server creation has started");
 		// token
-		result = RestAPI.request(getToken_URL, POST, RequestBody.getToken());
-		// result = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
+		result = RestAPI.post(getToken_URL, RequestBody.getToken(), timeout);
 		String token = ResponseParser.statusCodeParser(result);
-		String projectID = ResponseParser.getProjectIdFromToken(result);
+		String projectId = ResponseParser.getProjectIdFromToken(result);
+		String vmId = ResourceHandler.getVm(getVm_URL,token,serverName,VmImage_complete1, specs, timeout);
+		String volumeId = ResourceHandler.getVolume(getVolume_URL, token, volumeName, volumeImageId, projectId, timeout);
+		String publicIpId = ResourceHandler.getPublicIp(getIP_URL, token, timeout);
 
-		// get vm
-		String VmimageID = VmImage_complete1;
-		String specs = "61c68bc1-3a56-4827-9fd1-6a7929362bf6";
-		requestBody = RequestBody.getVm(serverName, VmimageID, specs);
-		// result = RestAPI.request(getVm_URL, POST, token, requestBody);
-		result = RestAPI.post(getVm_URL, token, requestBody, 10);
-		response = ResponseParser.statusCodeParser(result);
-		String VmId = ResponseParser.VmCreateResponseParser(response);
-
-		// get volume
-		String volumeImageID = "556aacd2-de16-47fc-b230-3db3a55be50d";
-		requestBody = RequestBody.getVolume(volumeName, volumeImageID);
-		result = RestAPI.request(getVolume_URL + projectID + "/volumes", POST, token, requestBody);
-		response = ResponseParser.statusCodeParser(result);
-		String volumeID = ResponseParser.volumeCreateResponseParser(response);
-
-		// get public ip
-		result = RestAPI.request(getIP_URL, POST, token, "");
-		response = ResponseParser.statusCodeParser(result);
-		String publicIpjobID = ResponseParser.IPCreateResponseParser(response);
-
-		//get public ip_id
-		response = ResponseParser.lookupJobId(publicIpjobID, token, 10);
-		String publicIP_ID = ResponseParser.PublicIPJobIDlookupParser(response);
 
 		// connect vm and volume
 		System.out.print("Server creation is in progress ");
 		int count = 0;
 		while (true) {
-			requestBody = RequestBody.connectVmAndVolume(volumeID);
-			result = RestAPI.request(connectVmAndVolume_URL + VmId + "/os-volume_attachments", POST, token, requestBody);
+			requestBody = RequestBody.connectVmAndVolume(volumeId);
+			result = RestAPI.request(connectVmAndVolume_URL + vmId + "/os-volume_attachments", POST, token, requestBody);
 			response = ResponseParser.statusCodeParser(result);
 			if (response.length() > 0) {
 				break;
@@ -86,29 +75,15 @@ public class KTCloudOpenAPI {
 		}
 		 System.out.println("Server creation is done");
 		 System.out.println("Server is connected with disk");
-		 
-		// look up vm ip
-		result = RestAPI.request(VmDetail_URL + VmId, GET, token, "");
-		response = ResponseParser.statusCodeParser(result);
-		String privateIP = ResponseParser.VmDetailResponseParser(response);
 
-		// set static NAT
-		String networkID = "71655962-3e67-42d6-a17d-6ab61a435dfe";
-		requestBody = RequestBody.setStaticNat(privateIP, networkID, publicIP_ID);
-		result = RestAPI.request(setStaticNAT_URL, POST, token, requestBody);
-		response = ResponseParser.statusCodeParser(result);
-		String staticNAT_ID = ResponseParser.staticNATSettingResponseParser(response);
+		String vmPrivateIp = ResponseParser.lookupVmPrivateIp(VmDetail_URL, token, vmId, timeout);
+		String staticNatId = ResourceHandler.setStaticNat(setStaticNAT_URL, token, networkId, vmPrivateIp, publicIpId, timeout);
+		String firewallJobId = ResourceHandler.openFirewall(openFirewall_URL,token, startPort, endPort, staticNatId, sourceNetworkId,
+				destinationNetworkAddress,protocol,destinationNetworkId,timeout);
 
-		// open firewall
-		requestBody = RequestBody.openFirewall("0", "65535", staticNAT_ID, "6b812762-c6bc-4a6d-affb-c469af1b4342",
-				"172.25.1.1/24", "ALL", "71655962-3e67-42d6-a17d-6ab61a435dfe");
-		result = RestAPI.request(openFirewall_URL, POST, token, requestBody);
-		response = ResponseParser.statusCodeParser(result);
-		String firewallJobId = ResponseParser.firewallJobIdParser(response);
-		
 		System.out.println("server creation is done");
 		
-		ServerInformation serverInformation = new ServerInformation(VmId, volumeID, publicIP_ID, staticNAT_ID, projectID, firewallJobId);
+		ServerInformation serverInformation = new ServerInformation(vmId, volumeId, publicIpId, staticNatId, projectId, firewallJobId);
 		return serverInformation;
 		
 	}
