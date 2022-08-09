@@ -15,7 +15,7 @@ public class ResourceHandler {
     static String getVm(String getVmUrl, String token, String serverName, String vmImageId, String specs, int timeout) throws Exception {
        String requestBody = RequestBody.getVm(serverName, vmImageId, specs);
        String result = RestAPI.post(getVmUrl, token, requestBody, timeout);
-       String  response = ResponseParser.statusCodeParser(result);
+       String response = ResponseParser.statusCodeParser(result);
         String vmId = ResponseParser.VmCreateResponseParser(response);
         return vmId;
     }

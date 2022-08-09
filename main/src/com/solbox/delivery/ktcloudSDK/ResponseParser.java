@@ -6,29 +6,52 @@ import java.net.HttpURLConnection;
 
 public class ResponseParser {
 
-	static String statusCodeParser(String result) throws JSONException {
+//	static String statusCodeParser(String result) throws Exception {
+//		JSONObject jsonResult = new JSONObject(result);
+//		if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
+//				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
+//				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
+//			return jsonResult.getString("response");
+//		} else {
+//			// fail logic should be here
+//			System.out.println( jsonResult.getInt("statusCode") );
+//			throw new Exception();
+//		}
+//	}
+
+	static String statusCodeParser(String result) throws Exception {
 		JSONObject jsonResult = new JSONObject(result);
-		if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
-				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
-				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
-			return jsonResult.getString("response");
-		} else {
+		if ( 400 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") <= 500 ) {
 			// fail logic should be here
-			// System.out.println( jsonResult.getInt("statusCode") );
-			return "";
+			System.out.println( jsonResult.getInt("statusCode") );
+			throw new Exception();
+		} else {
+			return jsonResult.getString("response");
 		}
 	}
 
-	static String getProjectIdFromToken(String result) throws JSONException {
+
+//	static String getProjectIdFromToken(String result) throws Exception {
+//		JSONObject jsonResult = new JSONObject(result);
+//		if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
+//				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
+//				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
+//			return jsonResult.getString("projectID");
+//		} else {
+//			// fail logic should be here
+//			System.out.println( jsonResult.getInt("statusCode") );
+//			throw new Exception();
+//		}
+//	}
+
+	static String getProjectIdFromToken(String result) throws Exception {
 		JSONObject jsonResult = new JSONObject(result);
-		if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
-				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
-				|| jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
-			return jsonResult.getString("projectID");
-		} else {
+		if (400 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") <= 500) {
 			// fail logic should be here
-			// System.out.println( jsonResult.getInt("statusCode") );
-			return "";
+			System.out.println( jsonResult.getInt("statusCode") );
+			throw new Exception();
+		} else {
+			return jsonResult.getString("projectID");
 		}
 	}
 
