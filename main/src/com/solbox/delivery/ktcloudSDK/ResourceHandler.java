@@ -62,6 +62,7 @@ public class ResourceHandler {
     }
 
     static void checkVmCreationStatus(String vmDetailUrl, String token, String vmId, int timeout, int maximumWaitingTime, int requestCycle) throws Exception {
+        System.out.print("Server creation is in progress ");
         int count = 0;
         while (true) {
             String result = RestAPI.get(vmDetailUrl + vmId, token, timeout);
@@ -70,6 +71,7 @@ public class ResourceHandler {
             JSONObject server = fianlJsonObject.getJSONObject("server");
             int power_state = server.getInt("OS-EXT-STS:power_state");
             if (power_state == 1) {
+                System.out.println("VM has been created");
                 return;
             }
             Thread.sleep(requestCycle*1000);

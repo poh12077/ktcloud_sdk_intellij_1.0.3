@@ -32,9 +32,7 @@ public class KTCloudOpenAPI {
 
 	public static ServerInformation createServer(String serverName, String volumeName) throws Exception {
 
-		String requestBody;
 		String result;
-		String response;
 		String VmImage_complete1 = "03a6328b-76c8-4d15-8e3f-d5cae5cf1156";
 		String VmImage_nginx = "fab16e16-5d53-4e00-892f-bec4b10079bb";
 		String specs = "61c68bc1-3a56-4827-9fd1-6a7929362bf6";
@@ -55,12 +53,11 @@ public class KTCloudOpenAPI {
 		String token = ResponseParser.statusCodeParser(result);
 		String projectId = ResponseParser.getProjectIdFromToken(result);
 		String vmId = ResourceHandler.getVm(getVm_URL,token,serverName,VmImage_complete1, specs, timeout);
-		String volumeId = ResourceHandler.getVolume(getVolume_URL, token, volumeName, volumeImageId, projectId, timeout);
+		String volumeId="";
+		//volumeId = ResourceHandler.getVolume(getVolume_URL, token, volumeName, volumeImageId, projectId, timeout);
 		String publicIpId = ResourceHandler.getPublicIp(getIP_URL, token, timeout);
-		System.out.print("Server creation is in progress ");
 		ResourceHandler.checkVmCreationStatus(VmDetail_URL,token,vmId,timeout,500, 1);
-		System.out.println("Server creation is done");
-		ResourceHandler.connectVmAndVolume(connectVmAndVolume_URL,token,vmId,volumeId,timeout);
+		//ResourceHandler.connectVmAndVolume(connectVmAndVolume_URL,token,vmId,volumeId,timeout);
 
 		String vmPrivateIp = ResponseParser.lookupVmPrivateIp(VmDetail_URL, token, vmId, timeout);
 		String staticNatId = ResourceHandler.setStaticNat(setStaticNAT_URL, token, networkId, vmPrivateIp, publicIpId, timeout);
@@ -71,7 +68,6 @@ public class KTCloudOpenAPI {
 		
 		ServerInformation serverInformation = new ServerInformation(vmId, volumeId, publicIpId, staticNatId, projectId, firewallJobId);
 		return serverInformation;
-		
 	}
 
 	public static void deleteServer(ServerInformation serverInformation) throws Exception {
@@ -82,7 +78,7 @@ public class KTCloudOpenAPI {
 		String token = ResponseParser.statusCodeParser(result);
 
 		ResourceHandler.deleteVmOnly(serverInformation.getVmId(), token, timeout);
-		ResourceHandler.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
+		//ResourceHandler.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
 		ResourceHandler.closeFirewall(serverInformation.getFirewallJobId(), token, timeout);
 		ResourceHandler.deleteStaticNat(serverInformation.getStaticNAT_ID(), token, timeout);
 		ResourceHandler.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
