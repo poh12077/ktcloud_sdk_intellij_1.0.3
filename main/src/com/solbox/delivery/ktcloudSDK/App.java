@@ -7,9 +7,9 @@ public class App {
 		try {
 
 			ServerInformation serverInformation = KTCloudOpenAPI.createServer("nanana", "solbox");
-			//KTCloudOpenAPI.deleteServer(serverInformation);
+			String result = KTCloudOpenAPI.deleteServer(serverInformation);
 			//KTCloudOpenAPI.init();
-			
+			System.out.println(result);
 
 		} catch (Exception e) {
 			System.out.println(e);

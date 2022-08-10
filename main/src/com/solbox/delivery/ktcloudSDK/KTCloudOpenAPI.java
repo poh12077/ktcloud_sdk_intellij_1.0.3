@@ -1,5 +1,7 @@
 package com.solbox.delivery.ktcloudSDK;
 
+import org.json.JSONObject;
+
 public class KTCloudOpenAPI {
 
     static final String getVm_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers";
@@ -76,20 +78,32 @@ public class KTCloudOpenAPI {
         return serverInformation;
     }
 
-    public static void deleteServer(ServerInformation serverInformation) throws Exception {
-        String result = "";
+    public static String deleteServer(ServerInformation serverInformation) throws Exception {
         System.out.println("Server deletion has started");
         // token
-        result = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
-        String token = ResponseParser.statusCodeParser(result);
+        String response = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
+        String token = ResponseParser.statusCodeParser(response);
+        boolean isVmDeleleted=false;
+        boolean isVolumeDeleleted=false;
+        boolean isFirewallCloseed=false;
+        boolean isStaticNatDisabled=false;
+        boolean isPublicIpDeleleted=false;
 
-        ResourceHandler.deleteVmOnly(serverInformation.getVmId(), token, timeout);
-        //ResourceHandler.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
-        ResourceHandler.closeFirewall(serverInformation.getFirewallJobId(), token, timeout);
-        ResourceHandler.deleteStaticNat(serverInformation.getStaticNAT_ID(), token, timeout);
-        ResourceHandler.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
+        isVmDeleleted = ResourceHandler.deleteVmOnly(serverInformation.getVmId(), token, timeout);
+        //isVolumeDeleleted =  ResourceHandler.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
+        isFirewallCloseed = ResourceHandler.closeFirewall(serverInformation.getFirewallJobId(), token, timeout);
+        isStaticNatDisabled = ResourceHandler.deleteStaticNat(serverInformation.getStaticNAT_ID(), token, timeout);
+        isPublicIpDeleleted = ResourceHandler.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
 
         System.out.println("server deletion is done");
+
+        JSONObject result = new JSONObject();
+        result.put("isVmDeleleted", isVmDeleleted);
+        result.put("isPublicIpDeleleted", isPublicIpDeleleted);
+        result.put("isFirewallCloseed", isFirewallCloseed);
+        result.put("isStaticNatDisabled", isStaticNatDisabled);
+        result.put("isVolumeDeleleted", isVolumeDeleleted);
+        return result.toString();
     }
 
     public static void rollBack(ServerInformation serverInformation) throws Exception {

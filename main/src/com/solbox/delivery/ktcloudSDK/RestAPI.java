@@ -5,6 +5,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -93,12 +102,80 @@ public class RestAPI {
         return result.toString();
     }
 
+    public static String getRetry(String url, String token, int timeout) throws Exception {
+        int maxRetries=3;
+        CloseableHttpClient client = HttpClientBuilder.create()
+                .setRetryHandler(new HttpRequestRetryHandler() {
+                    @Override
+                    public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+                        return executionCount <= maxRetries ;
+                    }
+                })
+                .setServiceUnavailableRetryStrategy(new ServiceUnavailableRetryStrategy() {
+                    int waitPeriod = 100;
+                    @Override
+                    public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
+                        waitPeriod *= 2;
+                        return executionCount <= maxRetries &&
+                                response.getStatusLine().getStatusCode() >= 500; //important!
+                    }
+
+                    @Override
+                    public long getRetryInterval() {
+                        return waitPeriod;
+                    }
+                })
+                .build();
+
+        HttpGet httpGet = new HttpGet(url);
+        httpGet.addHeader("User-Agent", "Mozilla/5.0");
+        httpGet.setHeader("Accept", "application/json");
+         httpGet.setHeader("X-Auth-Token", token);
+        CloseableHttpResponse httpResponse = client.execute(httpGet);
+        int statusCode = httpResponse.getStatusLine().getStatusCode();
+
+        String responseBody = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+        System.out.println(statusCode + " " + responseBody);
+        JSONObject result = new JSONObject();
+        result.put("statusCode", statusCode);
+        result.put("response", responseBody);
+        client.close();
+        return result.toString();
+
+    }
+    public static String executeRetryingTenTimesExplicitly(String URL, String token, int timeout) throws Exception {
+        CloseableHttpClient client = HttpClients.custom()
+                .addInterceptorLast(new HttpRequestInterceptor() {
+                    @Override
+                    public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
+                        throw new IOException("Planned");
+                    }
+                })
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(2, false))
+                .build();
+
+        HttpGet httpGet = new HttpGet(URL);
+        httpGet.addHeader("User-Agent", "Mozilla/5.0");
+        httpGet.setHeader("Accept", "application/json");
+       // httpGet.setHeader("X-Auth-Token", token);
+        CloseableHttpResponse httpResponse = client.execute(httpGet);
+        int statusCode = httpResponse.getStatusLine().getStatusCode();
+
+        String responseBody = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+        System.out.println(statusCode + " " + responseBody);
+        JSONObject result = new JSONObject();
+        result.put("statusCode", statusCode);
+        result.put("response", responseBody);
+        client.close();
+        return result.toString();
+    }
     public static String get(String URL, String token, int timeout) throws Exception {
         RequestConfig config = RequestConfig.custom()
                 .setConnectTimeout(timeout * 1000)
                 .setConnectionRequestTimeout(timeout * 1000)
                 .setSocketTimeout(timeout * 1000).build();
         CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+
         HttpGet httpGet = new HttpGet(URL);
         httpGet.addHeader("User-Agent", "Mozilla/5.0");
         httpGet.setHeader("Accept", "application/json");

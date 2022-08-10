@@ -31,7 +31,7 @@ public class ResponseParser {
 		}
 	}
 
-	static void statusCodeParser(String result, String successLog, String failLog) throws Exception {
+	static boolean statusCodeParser(String result, String successLog, String failLog) throws Exception {
 		JSONObject jsonResult = new JSONObject(result);
 		if ( 400 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") <= 500 ) {
 			System.out.println( jsonResult.getString("response") );
@@ -40,6 +40,7 @@ public class ResponseParser {
 		} else {
 			System.out.println(successLog);
 			System.out.println( jsonResult.getString("response") );
+			return true;
 		}
 	}
 
