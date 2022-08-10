@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 public class KTCloudOpenAPI {
 
-    static final String getVm_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers";
+    static String getVm_URL;
     static final String forceDeleteVm_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers/";
     static final String VmList_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers/detail";
     static final String VmDetail_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers/";
@@ -49,6 +49,12 @@ public class KTCloudOpenAPI {
         String destinationNetworkAddress = "172.25.1.1/24";
         String protocol = "ALL";
         String destinationNetworkId = "71655962-3e67-42d6-a17d-6ab61a435dfe";
+
+        String confPath = "C:\\Users\\young hwa park\\Desktop\\yhp\\source\\ktcloud\\ktcloud_sdk_intelij_1.0.3\\main\\etc\\conf.json";
+        String confString = Etc.read(confPath);
+        JSONObject conf = new JSONObject(confString);
+        JSONObject url = conf.getJSONObject("url");
+        getVm_URL = url.getString("getVm");
 
         System.out.println("Server creation has started");
 

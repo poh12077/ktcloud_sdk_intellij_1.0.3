@@ -143,32 +143,7 @@ public class RestAPI {
         return result.toString();
 
     }
-    public static String executeRetryingTenTimesExplicitly(String URL, String token, int timeout) throws Exception {
-        CloseableHttpClient client = HttpClients.custom()
-                .addInterceptorLast(new HttpRequestInterceptor() {
-                    @Override
-                    public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
-                        throw new IOException("Planned");
-                    }
-                })
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(2, false))
-                .build();
 
-        HttpGet httpGet = new HttpGet(URL);
-        httpGet.addHeader("User-Agent", "Mozilla/5.0");
-        httpGet.setHeader("Accept", "application/json");
-       // httpGet.setHeader("X-Auth-Token", token);
-        CloseableHttpResponse httpResponse = client.execute(httpGet);
-        int statusCode = httpResponse.getStatusLine().getStatusCode();
-
-        String responseBody = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
-        System.out.println(statusCode + " " + responseBody);
-        JSONObject result = new JSONObject();
-        result.put("statusCode", statusCode);
-        result.put("response", responseBody);
-        client.close();
-        return result.toString();
-    }
     public static String get(String URL, String token, int timeout) throws Exception {
         RequestConfig config = RequestConfig.custom()
                 .setConnectTimeout(timeout * 1000)
