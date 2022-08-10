@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 public class KTCloudOpenAPI {
 
-    static String getVm_URL;
+    static final String getVm_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers";
     static final String forceDeleteVm_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers/";
     static final String VmList_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers/detail";
     static final String VmDetail_URL = "https://api.ucloudbiz.olleh.com/d1/server/servers/";
@@ -33,28 +33,31 @@ public class KTCloudOpenAPI {
     static final String POST = "POST";
     static final int timeout = 10; //sec
 
-    public static ServerInformation createServer(String serverName, String volumeName) throws Exception {
+    public static ServerInformation createServer(String serverName, String volumeName, String confPath) throws Exception {
 
         String result;
-        String VmImage_complete1 = "03a6328b-76c8-4d15-8e3f-d5cae5cf1156";
-        String VmImage_nginx = "fab16e16-5d53-4e00-892f-bec4b10079bb";
-        String specs = "61c68bc1-3a56-4827-9fd1-6a7929362bf6";
-        String volumeImageId = "556aacd2-de16-47fc-b230-3db3a55be50d";
+        //String VmImage_nginx = "fab16e16-5d53-4e00-892f-bec4b10079bb";
         String networkId = "71655962-3e67-42d6-a17d-6ab61a435dfe";
 
-        //firewall parameter
-        String startPort = "0";
-        String endPort = "65535";
-        String sourceNetworkId = "6b812762-c6bc-4a6d-affb-c469af1b4342";
-        String destinationNetworkAddress = "172.25.1.1/24";
-        String protocol = "ALL";
-        String destinationNetworkId = "71655962-3e67-42d6-a17d-6ab61a435dfe";
-
-        String confPath = "C:\\Users\\young hwa park\\Desktop\\yhp\\source\\ktcloud\\ktcloud_sdk_intelij_1.0.3\\main\\etc\\conf.json";
         String confString = Etc.read(confPath);
         JSONObject conf = new JSONObject(confString);
-        JSONObject url = conf.getJSONObject("url");
-        getVm_URL = url.getString("getVm");
+
+        JSONObject image = conf.getJSONObject("image");
+        String VmImage_complete1 = image.getString("vm");
+        String volumeImageId = image.getString("volume");
+
+        JSONObject specs = conf.getJSONObject("specs");
+        String core8_ram16 = specs.getString("core8_ram16");
+
+        //firewall parameter
+        JSONObject firewall = conf.getJSONObject("firewall");
+        String startPort = firewall.getString("startPort");
+        String endPort = firewall.getString("endPort");
+        String sourceNetworkId = firewall.getString("sourceNetworkId");
+        String destinationNetworkAddress = firewall.getString("destinationNetworkAddress");
+        String protocol = firewall.getString("protocol");
+        String destinationNetworkId = firewall.getString("destinationNetworkId");
+
 
         System.out.println("Server creation has started");
 
@@ -64,7 +67,7 @@ public class KTCloudOpenAPI {
         String token = ResponseParser.statusCodeParser(result);
         String projectId = ResponseParser.getProjectIdFromToken(result);
         serverInformation.setProjectID(projectId);
-        String vmId = ResourceHandler.getVm(getVm_URL, token, serverName, VmImage_complete1, specs, timeout);
+        String vmId = ResourceHandler.getVm(getVm_URL, token, serverName, VmImage_complete1, core8_ram16, timeout);
         serverInformation.setVmId(vmId);
         //String volumeId = ResourceHandler.getVolume(getVolume_URL, token, volumeName, volumeImageId, projectId, timeout);
         //serverInformation.setVolumeID(volumeId);
@@ -89,11 +92,11 @@ public class KTCloudOpenAPI {
         // token
         String response = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
         String token = ResponseParser.statusCodeParser(response);
-        boolean isVmDeleleted=false;
-        boolean isVolumeDeleleted=false;
-        boolean isFirewallCloseed=false;
-        boolean isStaticNatDisabled=false;
-        boolean isPublicIpDeleleted=false;
+        boolean isVmDeleleted = false;
+        boolean isVolumeDeleleted = false;
+        boolean isFirewallCloseed = false;
+        boolean isStaticNatDisabled = false;
+        boolean isPublicIpDeleleted = false;
 
         isVmDeleleted = ResourceHandler.deleteVmOnly(serverInformation.getVmId(), token, timeout);
         //isVolumeDeleleted =  ResourceHandler.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
@@ -111,25 +114,6 @@ public class KTCloudOpenAPI {
         result.put("isVolumeDeleleted", isVolumeDeleleted);
         return result.toString();
     }
-
-    public static void rollBack(ServerInformation serverInformation) throws Exception {
-        String result = "";
-        System.out.println("rollback has started");
-        // token
-        result = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
-        String token = ResponseParser.statusCodeParser(result);
-        try {
-            ResourceHandler.deleteVmOnly(serverInformation.getVmId(), token, timeout);
-            //ResourceHandler.deleteVolume(serverInformation.getVolumeID(), serverInformation.getProjectID(), token, timeout);
-            ResourceHandler.deletePublicIp(serverInformation.getPublicIP_ID(), token, timeout);
-            ResourceHandler.deleteStaticNat(serverInformation.getStaticNAT_ID(), token, timeout);
-            ResourceHandler.closeFirewall(serverInformation.getFirewallJobId(), token, timeout);
-        } catch (Exception e) {
-			System.out.println("rollback is done");
-
-        }
-    }
-
 
     public static void init() throws Exception {
         String result;
