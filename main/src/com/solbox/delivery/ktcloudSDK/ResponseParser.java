@@ -22,11 +22,24 @@ public class ResponseParser {
 	static String statusCodeParser(String result) throws Exception {
 		JSONObject jsonResult = new JSONObject(result);
 		if ( 400 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") <= 500 ) {
-			// fail logic should be here
-			System.out.println( jsonResult.getInt("statusCode") );
+			ServerInformation serverInformation = new ServerInformation();
+			//KTCloudOpenAPI.rollBack(serverInformation);
+			KTCloudOpenAPI.deleteServer(serverInformation);
 			throw new Exception();
 		} else {
 			return jsonResult.getString("response");
+		}
+	}
+
+	static void statusCodeParser(String result, String successLog, String failLog) throws Exception {
+		JSONObject jsonResult = new JSONObject(result);
+		if ( 400 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") <= 500 ) {
+			System.out.println( jsonResult.getString("response") );
+			System.out.println(failLog);
+			throw new Exception();
+		} else {
+			System.out.println(successLog);
+			System.out.println( jsonResult.getString("response") );
 		}
 	}
 
@@ -144,8 +157,8 @@ public class ResponseParser {
 	}
 
 	static String lookupVmPrivateIp(String vmDetailUrl, String token, String vmId, int timeout) throws Exception {
-	  String result = RestAPI.get(vmDetailUrl + vmId, token, timeout);
-	String 	response = ResponseParser.statusCodeParser(result);
+		String result = RestAPI.get(vmDetailUrl + vmId, token, timeout);
+		String 	response = ResponseParser.statusCodeParser(result);
 		String vmPrivateIp = ResponseParser.VmDetailResponseParser(response);
 		return vmPrivateIp;
 	}

@@ -36,8 +36,13 @@ public class ResourceHandler {
     }
 
     static String getPublicIp(String getPublicIpUrl, String token, int timeout) throws Exception {
-        String  result = RestAPI.post(getPublicIpUrl, token, "", timeout);
-       String response = ResponseParser.statusCodeParser(result);
+         String  result = RestAPI.post(getPublicIpUrl, token, "", timeout);
+//        //test
+//        JSONObject jsonResult = new JSONObject(result);
+//        jsonResult.put("statusCode",400);
+//        result = jsonResult.toString();
+
+         String response = ResponseParser.statusCodeParser(result);
         String publicIpJobId = ResponseParser.IPCreateResponseParser(response);
         response = ResponseParser.lookupJobId(publicIpJobId, token, timeout);
         String publicIpId = ResponseParser.PublicIPJobIDlookupParser(response);
@@ -56,7 +61,13 @@ public class ResourceHandler {
                                String destinationNetworkAddress, String protocol, String destinationNetworkId, int timeout) throws Exception {
        String requestBody = RequestBody.openFirewall(startPort, endPort, staticNatId, sourceNetworkId, destinationNetworkAddress, protocol, destinationNetworkId);
        String result = RestAPI.post(openFirewallUrl, token, requestBody, timeout);
-       String response = ResponseParser.statusCodeParser(result);
+//        //test
+//        JSONObject jsonResult = new JSONObject(result);
+//        jsonResult.put("statusCode",400);
+//        result = jsonResult.toString();
+
+
+        String response = ResponseParser.statusCodeParser(result);
         String firewallJobId = ResponseParser.firewallJobIdParser(response);
         return firewallJobId;
     }
@@ -84,31 +95,32 @@ public class ResourceHandler {
         }
     }
 
-
-
     static void deleteVmOnly(String serverID, String token, int timeout) throws Exception {
+        if(serverID.length()==0){
+            return;
+        }
         String requestBody = RequestBody.forceDeleteVm();
         String result = RestAPI.post(KTCloudOpenAPI.forceDeleteVm_URL + serverID + "/action", token, requestBody,
                 timeout);
-        JSONObject jsonResult = new JSONObject(result);
-        if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
-            System.out.println("Server deletion is in progress");
-        } else {
-            System.out.println("Server deletion failed");
-        }
+        ResponseParser.statusCodeParser(result,"Server deletion is in progress","Server deletion failed");
+//        JSONObject jsonResult = new JSONObject(result);
+//        if (  100 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") < 400) {
+//            System.out.println("Server deletion is in progress");
+//        } else {
+//            System.out.println("Server deletion failed");
+//        }
     }
 
     static void deleteVolume(String volumeID, String projectID, String token, int timeout) throws Exception {
+        if(volumeID.length()==0){
+            return;
+        }
         int count = 0;
         while (true) {
             String result = RestAPI.delete(KTCloudOpenAPI.deleteVolume_URL + projectID + "/volumes/" + volumeID, token,
                     timeout);
             JSONObject jsonResult = new JSONObject(result);
-            if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
-                    || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
-                    || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
+            if (100 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") < 400) {
                 System.out.println("Volume deletion is done");
                 break;
             } else {
@@ -120,43 +132,49 @@ public class ResourceHandler {
     }
 
     static void deleteStaticNat(String staticNatId, String token, int timeout) throws Exception {
-        String result = RestAPI.delete(KTCloudOpenAPI.DeleteStaticNAT_URL+staticNatId, token,	timeout);
-        JSONObject jsonResult = new JSONObject(result);
-        if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
-            System.out.println("static NAT has been disabled");
-        } else {
-            System.out.println("static NAT deletion has failed");
+        if(staticNatId.length()==0){
+            return;
         }
+        String result = RestAPI.delete(KTCloudOpenAPI.DeleteStaticNAT_URL+staticNatId, token,	timeout);
+        ResponseParser.statusCodeParser(result,"static NAT has been disabled","static NAT deletion has failed");
+//        JSONObject jsonResult = new JSONObject(result);
+//        if (100 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") < 400) {
+//            System.out.println("static NAT has been disabled");
+//        } else {
+//            System.out.println("static NAT deletion has failed");
+//        }
     }
 
     static void deletePublicIp(String publicIpId, String token, int timeout) throws Exception {
-        String result = RestAPI.delete(KTCloudOpenAPI.deleteIP_URL+publicIpId, token, timeout);
-        JSONObject jsonResult = new JSONObject(result);
-        if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
-            System.out.println("public IP has been deleted");
-        } else {
-            System.out.println("public IP deletion has failed");
+        if(publicIpId.length()==0){
+            return;
         }
+        String result = RestAPI.delete(KTCloudOpenAPI.deleteIP_URL+publicIpId, token, timeout);
+        ResponseParser.statusCodeParser(result,"public IP has been deleted","public IP deletion has failed");
+//        JSONObject jsonResult = new JSONObject(result);
+//        if (100 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") < 400) {
+//            System.out.println("public IP has been deleted");
+//        } else {
+//            System.out.println("public IP deletion has failed");
+//        }
     }
 
 
 
     static void closeFirewall(String firewallJobId, String token, int timeout) throws Exception {
+        if(firewallJobId.length()==0){
+            return;
+        }
         String response = ResponseParser.lookupJobId(firewallJobId,token,timeout);
         String firewallId = ResponseParser.firewallIdParser(response);
         String result = RestAPI.delete(KTCloudOpenAPI.closeFirewall_URL+firewallId, token, timeout);
-        JSONObject jsonResult = new JSONObject(result);
-        if (jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_CREATED
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_OK
-                || jsonResult.getInt("statusCode") == HttpURLConnection.HTTP_ACCEPTED) {
-            System.out.println("firewall has closed");
-        } else {
-            System.out.println("firewall still opened");
-        }
+        ResponseParser.statusCodeParser(result,"firewall has closed","firewall still opened");
+//        JSONObject jsonResult = new JSONObject(result);
+//        if (100 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") < 400) {
+//            System.out.println("firewall has closed");
+//        } else {
+//            System.out.println("firewall still opened");
+//        }
     }
 
 

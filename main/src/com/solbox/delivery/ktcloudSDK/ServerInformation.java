@@ -1,23 +1,23 @@
 package com.solbox.delivery.ktcloudSDK;
 public class ServerInformation {
-	private String VmId;
-	private String volumeID;
-	private String publicIP_ID;
-	private String networkID;
-	private String staticNAT_ID;
-	private String firewallJobId;
-	private String projectID;
+	static private String VmId="";
+	static private String volumeID="";
+	static private String publicIP_ID="";
+	static private String networkID="";
+	static private String staticNAT_ID="";
+	static private String firewallJobId="";
+	static private String projectID="";
 
-	public ServerInformation(String VmId, String volumeID, String publicIP_ID, 
-			String staticNAT_ID, String projectID, String firewallJobId) {
-		this.VmId = VmId;
-		this.volumeID = volumeID;
-		this.publicIP_ID = publicIP_ID;
-		this.staticNAT_ID = staticNAT_ID;
-		this.projectID = projectID;
-		this.firewallJobId=firewallJobId;
-		//this.networkID=networkID;
-	}
+//	public ServerInformation(String VmId, String volumeID, String publicIP_ID,
+//			String staticNAT_ID, String projectID, String firewallJobId) {
+//		this.VmId = VmId;
+//		this.volumeID = volumeID;
+//		this.publicIP_ID = publicIP_ID;
+//		this.staticNAT_ID = staticNAT_ID;
+//		this.projectID = projectID;
+//		this.firewallJobId=firewallJobId;
+//		//this.networkID=networkID;
+//	}
 
 	
 	public String getVmId() {
