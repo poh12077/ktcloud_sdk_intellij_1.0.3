@@ -31,7 +31,7 @@ public class KTCloudOpenAPI {
     static final String GET = "GET";
     static final String DELETE = "DELETE";
     static final String POST = "POST";
-    static final int timeout = 10; //sec
+    //static final int timeout = 10; //sec
 
     public static ServerInformation createServer(String serverName, String confPath) throws Exception {
         try {
@@ -41,6 +41,8 @@ public class KTCloudOpenAPI {
             //read config
             String confString = Etc.read(confPath);
             JSONObject conf = new JSONObject(confString);
+            JSONObject http = conf.getJSONObject("http");
+            int timeout = http.getInt("timeout");
             JSONObject image = conf.getJSONObject("image");
             String VmImage_complete1 = image.getString("vm");
             JSONObject specs = conf.getJSONObject("specs");
@@ -72,7 +74,7 @@ public class KTCloudOpenAPI {
                 vmPrivateIp = ResponseParser.lookupVmPrivateIp(VmDetail_URL, token, vmId, timeout);
             } else {
                 System.out.println("vm creation error");
-                deleteServer(serverInformation);
+                deleteServer(serverInformation, confPath);
                 throw new Exception();
             }
             String staticNatId = ResourceHandler.setStaticNat(setStaticNAT_URL, token, networkId, vmPrivateIp, publicIpId, timeout);
@@ -85,7 +87,7 @@ public class KTCloudOpenAPI {
             return serverInformation;
         } catch (Exception e) {
             ServerInformation serverInformation = new ServerInformation();
-            KTCloudOpenAPI.deleteServer(serverInformation);
+            KTCloudOpenAPI.deleteServer(serverInformation,confPath);
             throw new Exception();
         }
     }
@@ -98,6 +100,8 @@ public class KTCloudOpenAPI {
             //read conf
             String confString = Etc.read(confPath);
             JSONObject conf = new JSONObject(confString);
+            JSONObject http = conf.getJSONObject("http");
+            int timeout = http.getInt("timeout");
             JSONObject image = conf.getJSONObject("image");
             String VmImage_complete1 = image.getString("vm");
             String volumeImageId = image.getString("volume");
@@ -131,7 +135,7 @@ public class KTCloudOpenAPI {
                 ResourceHandler.connectVmAndVolume(connectVmAndVolume_URL, token, vmId, volumeId, timeout);
             } else {
                 System.out.println("vm creation error");
-                deleteServer(serverInformation);
+                deleteServer(serverInformation, confPath);
                 throw new Exception();
             }
 
@@ -146,13 +150,19 @@ public class KTCloudOpenAPI {
             return serverInformation;
         } catch (Exception e) {
             ServerInformation serverInformation = new ServerInformation();
-            KTCloudOpenAPI.deleteServer(serverInformation);
+            KTCloudOpenAPI.deleteServer(serverInformation,confPath);
             throw new Exception();
         }
     }
 
 
-    public static String deleteServer(ServerInformation serverInformation) throws Exception {
+    public static String deleteServer(ServerInformation serverInformation,String confPath) throws Exception {
+        //read conf
+        String confString = Etc.read(confPath);
+        JSONObject conf = new JSONObject(confString);
+        JSONObject http = conf.getJSONObject("http");
+        int timeout = http.getInt("timeout");
+
         System.out.println("Server deletion has started");
         // token
         String response = RestAPI.post(getToken_URL, RequestBody.getToken(), 10);
@@ -181,7 +191,13 @@ public class KTCloudOpenAPI {
         return result.toString();
     }
 
-    public static void init() throws Exception {
+    public static void init(String confPath) throws Exception {
+        //read conf
+        String confString = Etc.read(confPath);
+        JSONObject conf = new JSONObject(confString);
+        JSONObject http = conf.getJSONObject("http");
+        int timeout = http.getInt("timeout");
+
         String result;
         String response;
         result = RestAPI.request(getToken_URL, POST, RequestBody.getToken());
@@ -211,7 +227,7 @@ public class KTCloudOpenAPI {
         //delete volume
         result = RestAPI.get(deleteAllVolume_URL + projectID + "/volumes/detail", token, timeout);
         response = ResponseParser.statusCodeParser(result);
-        Initialization.deleteAllVolume(response, token, projectID);
+        Initialization.deleteAllVolume(response, token, projectID, timeout);
 
         System.out.println("initialization is done");
     }

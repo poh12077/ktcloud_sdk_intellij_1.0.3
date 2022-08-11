@@ -34,6 +34,9 @@
     },
     "specs":{
         "core8_ram16":"61c68bc1-3a56-4827-9fd1-6a7929362bf6"
+    },
+    "http":{
+        "timeout":10
     }
 
 }
