@@ -38,13 +38,32 @@ public class ResourceHandler {
     }
 
     static String getPublicIp(String getPublicIpUrl, String token, int timeout) throws Exception {
+        String publicIpJobId = "";
         String result = RestAPI.post(getPublicIpUrl, token, "", timeout);
-        String response = ResponseParser.statusCodeParser(result);
-        String publicIpJobId = ResponseParser.IPCreateResponseParser(response);
-        response = ResponseParser.lookupJobId(publicIpJobId, token, timeout);
-        String publicIpId = ResponseParser.PublicIPJobIDlookupParser(response);
-        return publicIpId;
+        JSONObject fianlJsonObject = new JSONObject(result);
+        String responseString = fianlJsonObject.getString("response");
+        JSONObject response = new JSONObject(responseString);
+        JSONObject nc_associateentpublicipresponse = response.getJSONObject("nc_associateentpublicipresponse");
+        if (nc_associateentpublicipresponse.has("job_id")) {
+            publicIpJobId = ResponseParser.IPCreateResponseParser(responseString);
+            responseString = ResponseParser.lookupJobId(publicIpJobId, token, timeout);
+            String publicIpId = ResponseParser.PublicIPJobIDlookupParser(responseString);
+            return publicIpId;
+        } else {
+            System.out.println("public ip creation error");
+            throw new Exception();
+        }
     }
+
+//    static String getPublicIp(String getPublicIpUrl, String token, int timeout) throws Exception {
+//        String result = RestAPI.post(getPublicIpUrl, token, "", timeout);
+//        String response = ResponseParser.statusCodeParser(result);
+//        String publicIpJobId = ResponseParser.IPCreateResponseParser(response);
+//        response = ResponseParser.lookupJobId(publicIpJobId, token, timeout);
+//        String publicIpId = ResponseParser.PublicIPJobIDlookupParser(response);
+//        return publicIpId;
+//    }
+//
 
     static String setStaticNat(String setStaticNatUrl, String token, String networkId, String vmPrivateIp, String publicIpId, int timeout) throws Exception {
         String requestBody = RequestBody.setStaticNat(vmPrivateIp, networkId, publicIpId);
@@ -152,9 +171,9 @@ public class ResourceHandler {
         String responseString = fianlJsonObject.getString("response");
         JSONObject response = new JSONObject(responseString);
         JSONObject nc_disassociateentpublicipresponse = response.getJSONObject("nc_disassociateentpublicipresponse");
-        if(nc_disassociateentpublicipresponse.has("job_id")){
+        if (nc_disassociateentpublicipresponse.has("job_id")) {
             return true;
-        }else {
+        } else {
             boolean isPublicIpDeleted = nc_disassociateentpublicipresponse.getBoolean("success");
             return isPublicIpDeleted;
         }
