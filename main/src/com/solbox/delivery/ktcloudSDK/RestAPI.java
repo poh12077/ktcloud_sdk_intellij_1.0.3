@@ -157,12 +157,11 @@ public class RestAPI {
         httpGet.setHeader("X-Auth-Token", token);
         CloseableHttpResponse httpResponse = client.execute(httpGet);
         int statusCode = httpResponse.getStatusLine().getStatusCode();
-
         String responseBody = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
         System.out.println(statusCode + " " + responseBody);
         JSONObject result = new JSONObject();
         result.put("statusCode", statusCode);
-        result.put("response", responseBody);
+        result.put("response",  responseBody);
         client.close();
         return result.toString();
     }
