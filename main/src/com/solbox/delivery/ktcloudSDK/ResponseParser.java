@@ -23,7 +23,6 @@ public class ResponseParser {
 		JSONObject jsonResult = new JSONObject(result);
 		if ( 400 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") <= 500 ) {
 			ServerInformation serverInformation = new ServerInformation();
-			//KTCloudOpenAPI.rollBack(serverInformation);
 			KTCloudOpenAPI.deleteServer(serverInformation);
 			throw new Exception();
 		} else {

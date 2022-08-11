@@ -72,7 +72,7 @@ public class ResourceHandler {
         return firewallJobId;
     }
 
-    static void checkVmCreationStatus(String vmDetailUrl, String token, String vmId, int timeout, int maximumWaitingTime, int requestCycle) throws Exception {
+    static boolean checkVmCreationStatus(String vmDetailUrl, String token, String vmId, int timeout, int maximumWaitingTime, int requestCycle) throws Exception {
         System.out.print("Server creation is in progress ");
         int count = 0;
         while (true) {
@@ -83,17 +83,19 @@ public class ResourceHandler {
             int power_state = server.getInt("OS-EXT-STS:power_state");
             if (power_state == 1) {
                 System.out.println("VM has been created");
-                return;
+                return true;
             }
             Thread.sleep(requestCycle*1000);
             count++;
             System.out.print(count+" ");
 
             if( maximumWaitingTime <= count ){
-                throw new Exception("VM creation error");
+                return false;
             }
         }
     }
+
+
 
     static boolean deleteVmOnly(String serverID, String token, int timeout) throws Exception {
         if(serverID.length()==0){
@@ -111,7 +113,7 @@ public class ResourceHandler {
 //        }
     }
 
-    static boolean deleteVolume(String volumeID, String projectID, String token, int timeout) throws Exception {
+    static boolean deleteVolume(String volumeID, String projectID, String token, int timeout, int maximumWaitingTime, int requestCycle) throws Exception {
         if(volumeID.length()==0){
             return false;
         }
@@ -127,7 +129,12 @@ public class ResourceHandler {
                 System.out.print(count + " ");
             }
             count++;
-            Thread.sleep(1000);
+            Thread.sleep(requestCycle*1000);
+
+            if( maximumWaitingTime <= count ){
+                System.out.print("Volume deletion error");
+                return false;
+            }
         }
     }
 
