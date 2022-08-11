@@ -37,11 +37,6 @@ public class ResourceHandler {
 
     static String getPublicIp(String getPublicIpUrl, String token, int timeout) throws Exception {
          String  result = RestAPI.post(getPublicIpUrl, token, "", timeout);
-//        //test
-//        JSONObject jsonResult = new JSONObject(result);
-//        jsonResult.put("statusCode",400);
-//        result = jsonResult.toString();
-
          String response = ResponseParser.statusCodeParser(result);
         String publicIpJobId = ResponseParser.IPCreateResponseParser(response);
         response = ResponseParser.lookupJobId(publicIpJobId, token, timeout);
@@ -61,12 +56,6 @@ public class ResourceHandler {
                                String destinationNetworkAddress, String protocol, String destinationNetworkId, int timeout) throws Exception {
        String requestBody = RequestBody.openFirewall(startPort, endPort, staticNatId, sourceNetworkId, destinationNetworkAddress, protocol, destinationNetworkId);
        String result = RestAPI.post(openFirewallUrl, token, requestBody, timeout);
-//        //test
-//        JSONObject jsonResult = new JSONObject(result);
-//        jsonResult.put("statusCode",400);
-//        result = jsonResult.toString();
-
-
         String response = ResponseParser.statusCodeParser(result);
         String firewallJobId = ResponseParser.firewallJobIdParser(response);
         return firewallJobId;

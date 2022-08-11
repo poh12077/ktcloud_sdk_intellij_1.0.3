@@ -22,8 +22,6 @@ public class ResponseParser {
 	static String statusCodeParser(String result) throws Exception {
 		JSONObject jsonResult = new JSONObject(result);
 		if ( 400 <= jsonResult.getInt("statusCode") && jsonResult.getInt("statusCode") <= 500 ) {
-			ServerInformation serverInformation = new ServerInformation();
-			KTCloudOpenAPI.deleteServer(serverInformation);
 			throw new Exception();
 		} else {
 			return jsonResult.getString("response");
@@ -130,7 +128,7 @@ public class ResponseParser {
 		return ID;
 	}
 
-	static String firewallJobIdParser(String response) throws JSONException {
+	static String firewallJobIdParser(String response) throws Exception {
 		JSONObject fianlJsonObject = new JSONObject(response);
 		JSONObject nc_createfirewallruleresponse = fianlJsonObject.getJSONObject("nc_createfirewallruleresponse");		
 		String jobId = nc_createfirewallruleresponse.getString("job_id");
