@@ -1,4 +1,4 @@
-package com.solbox.delivery.ktcloudSDK;
+package main.java.com.solbox.delivery.ktcloudSDK;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

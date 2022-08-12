@@ -1,4 +1,4 @@
-package com.solbox.delivery.ktcloudSDK;
+package main.java.com.solbox.delivery.ktcloudSDK;
 public class ServerInformation {
 	static private String VmId="";
 	static private String volumeID="";

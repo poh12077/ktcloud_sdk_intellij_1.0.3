@@ -1,4 +1,4 @@
-package com.solbox.delivery.ktcloudSDK;
+package main.java.com.solbox.delivery.ktcloudSDK;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
